@@ -8,11 +8,11 @@ namespace ChatMessenger
         public Form1()
         {
             InitializeComponent();
+            this.Text = "LocaLink";
         }
 
         private void pictureBox1_Click(object sender, EventArgs e)
         {
-            this.Text = "LocaLink";
             RandomChat main = new RandomChat();
             main.StartPosition = FormStartPosition.CenterScreen;
             main.Show();

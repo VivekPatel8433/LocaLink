@@ -189,8 +189,9 @@ namespace ChatMessenger
             // Avatar
             PictureBox avatar = new PictureBox()
             {
-                Size = new Size(70, 80),
+                Size = new Size(90, 90),
                 SizeMode = PictureBoxSizeMode.Zoom,
+                Location = new Point(90, 10),
                 Image = Image.FromFile(@"C:\Users\vivek\OneDrive\Desktop\TERM 3\OBJECT ORIENTED PROGRAMMING\Final Project\ChatMessenger\Profile Search.png")
             };
             panelRight.Controls.Add(avatar);
@@ -201,7 +202,8 @@ namespace ChatMessenger
                 Text = "Searching...",
                 Font = new Font("Segoe UI", 12, FontStyle.Bold),
                 AutoSize = true,
-                Location = new Point(0, 85)
+                Location = new Point(80, 100)
+
             });
 
             // Separator
@@ -226,7 +228,7 @@ namespace ChatMessenger
                 Text = "Quick Actions",
                 Font = new Font("Segoe UI", 11, FontStyle.Bold),
                 AutoSize = true,
-                Location = new Point(0, y + 20)
+                Location = new Point(75, y + 20)
             };
             panelRight.Controls.Add(quickLabel);
 
@@ -237,7 +239,7 @@ namespace ChatMessenger
             {
                 Text = "Start Drawing Game",
                 Size = new Size(220, 35),
-                Location = new Point(5, y),
+                Location = new Point(25, y),
                 BackColor = ColorTranslator.FromHtml("#0F172A"),
                 ForeColor = Color.White,
                 FlatStyle = FlatStyle.Flat
@@ -251,7 +253,7 @@ namespace ChatMessenger
             {
                 Text = "Share Screen",
                 Size = new Size(220, 35),
-                Location = new Point(5, y),
+                Location = new Point(25, y),
                 BackColor = ColorTranslator.FromHtml("#0F172A"),
                 ForeColor = Color.White,
                 FlatStyle = FlatStyle.Flat
@@ -265,7 +267,7 @@ namespace ChatMessenger
             {
                 Text = "Send File",
                 Size = new Size(220, 35),
-                Location = new Point(5, y),
+                Location = new Point(25, y),
                 BackColor = ColorTranslator.FromHtml("#0F172A"),
                 ForeColor = Color.White,
                 FlatStyle = FlatStyle.Flat

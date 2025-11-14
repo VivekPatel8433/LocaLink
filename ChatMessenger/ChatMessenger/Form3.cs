@@ -174,8 +174,184 @@ namespace ChatMessenger
         }
         private void BuildRightSidebar()
         {
+            // Avatar
+            PictureBox avatar = new PictureBox()
+            {
+                Size = new Size(90, 90),
+                SizeMode = PictureBoxSizeMode.Zoom,
+                Location = new Point(90, 10),
+                Image = Image.FromFile(@"C:\Users\vivek\OneDrive\Desktop\TERM 3\OBJECT ORIENTED PROGRAMMING\Final Project\ChatMessenger\Profile Search.png")
+            };
+            panelRight.Controls.Add(avatar);
+
+            panelRight.Controls.Add(new Label()
+            {
+                Text = "Anonymous User",
+                Font = new Font("Segoe UI", 12, FontStyle.Bold),
+                AutoSize = true,
+                Location = new Point(40, 100)
+            });
+
+            panelRight.Controls.Add(new Label()
+            {
+                Text = "Random Chat Partner",
+                Font = new Font("Segoe UI", 12),
+                AutoSize = true,
+                Location = new Point(30,120)
+            });
+
+
+            // Separator
+            panelRight.Controls.Add(new Panel()
+            {
+                Height = 1,
+                Dock = DockStyle.Top,
+                BackColor = Color.LightGray,
+                Margin = new Padding(0, 20, 0, 20)
+            });
+
+            // Toggles
+            int y = 180;
+
+            // Start Drawing Game button
+            Button drawingBtn = new Button()
+            {
+                Text = "Start Drawing Game",
+                Size = new Size(220, 35),
+                Location = new Point(25, y),
+                BackColor = ColorTranslator.FromHtml("#0F172A"),
+                ForeColor = Color.White,
+                FlatStyle = FlatStyle.Flat
+            };
+            drawingBtn.FlatAppearance.BorderSize = 0;
+            panelRight.Controls.Add(drawingBtn);
+            y += 60;
+
+            // Add Friend button
+            Button shareScreenBtn = new Button()
+            {
+                Text = "Add A Friend",
+                Size = new Size(220, 35),
+                Location = new Point(25, y),
+                BackColor = ColorTranslator.FromHtml("#0F172A"),
+                ForeColor = Color.White,
+                FlatStyle = FlatStyle.Flat
+            };
+            shareScreenBtn.FlatAppearance.BorderSize = 0;
+            panelRight.Controls.Add(shareScreenBtn);
+            y += 65;
+
+            // Block User button
+            Button sendFileBtn = new Button()
+            {
+                Text = "Block User",
+                Size = new Size(220, 35),
+                Location = new Point(25, y),
+                BackColor = ColorTranslator.FromHtml("#0F172A"),
+                ForeColor = Color.White,
+                FlatStyle = FlatStyle.Flat
+            };
+            sendFileBtn.FlatAppearance.BorderSize = 0;
+            panelRight.Controls.Add(sendFileBtn);
+            y += 70;
+
+            // Quick Actions
+            Label quickLabel = new Label()
+            {
+                Text = "Quick Actions",
+                Font = new Font("Segoe UI", 11, FontStyle.Bold),
+                AutoSize = true,
+                Location = new Point(5, y - 30)
+            };
+            panelRight.Controls.Add(quickLabel);
+
+
+            // Find New Partner
+            Button newPartnerBtn = new Button()
+            {
+                Text = "Find New Partner",
+                Size = new Size(220, 35),
+                Location = new Point(25, y),
+                BackColor = ColorTranslator.FromHtml("#EF4444"),
+                ForeColor = Color.White,
+                FlatStyle = FlatStyle.Flat
+            };
+            newPartnerBtn.FlatAppearance.BorderSize = 0;
+            panelRight.Controls.Add(newPartnerBtn);
+            y += 60;
+
+            // Find New Partner
+            Button muteChatBtn = new Button()
+            {
+                Text = "Mute Chat",
+                Size = new Size(220, 35),
+                Location = new Point(25, y),
+                BackColor = ColorTranslator.FromHtml("#EF4444"),
+                ForeColor = Color.White,
+                FlatStyle = FlatStyle.Flat
+            };
+            muteChatBtn.FlatAppearance.BorderSize = 0;
+            panelRight.Controls.Add(muteChatBtn);
+            y += 60;
+
+            // Find New Partner
+            Button exportChatBtn = new Button()
+            {
+                Text = "Export Chat",
+                Size = new Size(220, 35),
+                Location = new Point(25, y),
+                BackColor = ColorTranslator.FromHtml("#EF4444"),
+                ForeColor = Color.White,
+                FlatStyle = FlatStyle.Flat
+            };
+            exportChatBtn.FlatAppearance.BorderSize = 0;
+            panelRight.Controls.Add(exportChatBtn);
+            y += 60;
+
+            // Network Status Panel
+            Panel networkStatus = new Panel()
+            {
+                Height = 120,
+                Dock = DockStyle.Bottom,
+                BackColor = Color.FromArgb(230, 230, 230),
+                Padding = new Padding(10)
+            };
+            panelRight.Controls.Add(networkStatus);
+
+            // Title
+            Label networkTitle = new Label()
+            {
+                Text = "Network Status",
+                Font = new Font("Segoe UI", 10, FontStyle.Bold),
+                AutoSize = true,
+                Location = new Point(5, 5)
+            };
+            networkStatus.Controls.Add(networkTitle);
+
+            // Connection status
+            Label connectionStatus = new Label()
+            {
+                Text = "Connection: Connected",
+                Font = new Font("Segoe UI", 9),
+                AutoSize = true,
+                Location = new Point(5, 25),
+                ForeColor = Color.Green
+            };
+            networkStatus.Controls.Add(connectionStatus);
+
+            // Server IP
+            Label serverIP = new Label()
+            {
+                Text = "Server: 198.165.1.25",
+                Font = new Font("Segoe UI", 9),
+                AutoSize = true,
+                Location = new Point(5, 45)
+            };
+            networkStatus.Controls.Add(serverIP);
 
         }
+
+
         private void BuildMainArea()
         {
 

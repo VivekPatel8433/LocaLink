@@ -31,6 +31,8 @@
             components = new System.ComponentModel.Container();
             imageList1 = new ImageList(components);
             pictureBox1 = new PictureBox();
+            timer1 = new System.Windows.Forms.Timer(components);
+            timer2 = new System.Windows.Forms.Timer(components);
             ((System.ComponentModel.ISupportInitialize)pictureBox1).BeginInit();
             SuspendLayout();
             // 
@@ -68,5 +70,7 @@
 
         private ImageList imageList1;
         private PictureBox pictureBox1;
+        private System.Windows.Forms.Timer timer1;
+        private System.Windows.Forms.Timer timer2;
     }
 }

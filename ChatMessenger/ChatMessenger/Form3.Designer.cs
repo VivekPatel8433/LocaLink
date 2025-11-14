@@ -1,6 +1,6 @@
 ﻿namespace ChatMessenger
 {
-    partial class RandomChat
+    partial class Form3
     {
         /// <summary>
         /// Required designer variable.
@@ -28,23 +28,19 @@
         /// </summary>
         private void InitializeComponent()
         {
-            components = new System.ComponentModel.Container();
-            timer1 = new System.Windows.Forms.Timer(components);
             SuspendLayout();
             // 
-            // RandomChart
+            // Form3
             // 
             AutoScaleDimensions = new SizeF(8F, 20F);
             AutoScaleMode = AutoScaleMode.Font;
             ClientSize = new Size(800, 450);
-            Name = "RandomChart";
-            Text = "RandomChart";
-         
+            Name = "Form3";
+            Text = "Form3";
+            Load += Form3_Load;
             ResumeLayout(false);
         }
 
         #endregion
-
-        private System.Windows.Forms.Timer timer1;
     }
 }

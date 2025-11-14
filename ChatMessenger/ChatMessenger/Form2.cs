@@ -4,16 +4,32 @@ using System.Windows.Forms;
 
 namespace ChatMessenger
 {
-    public partial class RandomChat : Form
+    public partial class Form2 : Form
     {
         Panel panelLeft;
         Panel panelMain;
         Panel panelRight;
 
-        public RandomChat()
+        public Form2()
         {
             InitializeComponent();
             BuildUI();
+        }
+
+
+        private void Form2_Click(object sender, EventArgs e)
+        {
+            try
+            {
+                Form3 main = new Form3();
+                main.StartPosition = FormStartPosition.CenterScreen;
+                main.Show();
+                this.Hide();
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show(ex.Message);
+            }
         }
 
         private void BuildUI()
@@ -33,6 +49,7 @@ namespace ChatMessenger
             };
             this.Controls.Add(panelLeft);
             BuildLeftSidebar();
+           
 
             // RIGHT PANEL
             panelRight = new Panel()
@@ -53,6 +70,7 @@ namespace ChatMessenger
             };
             this.Controls.Add(panelMain);
             BuildMainArea();
+            panelMain.Click += Form2_Click;
         }
 
         private void BuildLeftSidebar()
@@ -353,6 +371,7 @@ namespace ChatMessenger
                 Anchor = AnchorStyles.None
             };
             panelMain.Controls.Add(icon);
+            icon.Click += Form2_Click;
 
             // Center Text
             panelMain.Controls.Add(new Label()
@@ -385,6 +404,21 @@ namespace ChatMessenger
             };
             cancelBtn.FlatAppearance.BorderSize = 0;
             panelMain.Controls.Add(cancelBtn);
+        }
+
+        private void pictureBox2_Load(object sender, EventArgs e)
+        {
+
+        }
+
+        private void Form2_Load(object sender, EventArgs e)
+        {
+
+        }
+
+        private void Form2_Load_1(object sender, EventArgs e)
+        {
+
         }
     }
 }

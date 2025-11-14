@@ -11,9 +11,9 @@ namespace ChatMessenger
             this.Text = "LocaLink";
         }
 
-        private void pictureBox1_Click(object sender, EventArgs e)
+        private void form1_Click(object sender, EventArgs e)
         {
-            RandomChat main = new RandomChat();
+            Form2 main = new Form2();
             main.StartPosition = FormStartPosition.CenterScreen;
             main.Show();
             this.Hide();

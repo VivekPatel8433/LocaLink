@@ -81,7 +81,8 @@ namespace ChatMessenger
                 Size = new Size(60, 60),
                 Location = new Point(20, 10),
                 SizeMode = PictureBoxSizeMode.Zoom,
-                Image = Image.FromFile(@"C:\Users\vivek\OneDrive\Desktop\TERM 3\OBJECT ORIENTED PROGRAMMING\Final Project\ChatMessenger\Profile-Avatar-PNG.png")
+                //Image = Properties.Resources. Assets.ProfileAvatar)
+                Image = Image.FromFile(@"Resources\Assets\ProfileAvatar.png")
             };
             panelLeft.Controls.Add(avatar);
 
@@ -147,7 +148,7 @@ namespace ChatMessenger
                     Size = new Size(40, 40),
                     Location = new Point(5, 5),
                     SizeMode = PictureBoxSizeMode.Zoom,
-                    Image = Image.FromFile(@"C:\Users\vivek\OneDrive\Desktop\TERM 3\OBJECT ORIENTED PROGRAMMING\Final Project\ChatMessenger\Recent chats.jpg") // replace with avatar
+                    Image = Image.FromFile(@"Resources\Assets\RecentChats.jpg") // replace with avatar
                 };
                 chatItem.Controls.Add(chatAvatar);
 
@@ -192,7 +193,7 @@ namespace ChatMessenger
                 Size = new Size(90, 90),
                 SizeMode = PictureBoxSizeMode.Zoom,
                 Location = new Point(90, 10),
-                Image = Image.FromFile(@"C:\Users\vivek\OneDrive\Desktop\TERM 3\OBJECT ORIENTED PROGRAMMING\Final Project\ChatMessenger\Profile Search.png")
+                Image = Image.FromFile(@"Resources\Assets\ProfileSearch.png")
             };
             panelRight.Controls.Add(avatar);
 
@@ -368,7 +369,7 @@ namespace ChatMessenger
             {
                 Size = new Size(65, 65),
                 SizeMode = PictureBoxSizeMode.Zoom,
-                Image = Image.FromFile(@"C:\Users\vivek\OneDrive\Desktop\TERM 3\OBJECT ORIENTED PROGRAMMING\Final Project\ChatMessenger\Search.png"),
+                Image = Image.FromFile(@"Resources\Assets\Search.png"),
                 Location = new Point((panelMain.Width / 2) - 30, 200),
                 Anchor = AnchorStyles.None
             };

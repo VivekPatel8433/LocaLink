@@ -9,11 +9,12 @@ namespace ChatMessenger
         Panel panelLeft;
         Panel panelMain;
         Panel panelRight;
-
-        public Form2()
+        User User;
+        public Form2(User user)
         {
             InitializeComponent();
-            BuildUI();
+            BuildUI(user);
+            User = user;
         }
 
 
@@ -21,7 +22,7 @@ namespace ChatMessenger
         {
             try
             {
-                Form3 main = new Form3();
+                Form3 main = new Form3(User);
                 main.StartPosition = FormStartPosition.CenterScreen;
                 main.Show();
                 this.Hide();
@@ -32,7 +33,7 @@ namespace ChatMessenger
             }
         }
 
-        private void BuildUI()
+        private void BuildUI(User user)
         {
             this.Text = "RandomChat";
             this.BackColor = ColorTranslator.FromHtml("#F5F7FA");
@@ -48,7 +49,7 @@ namespace ChatMessenger
                 Padding = new Padding(15, 20, 15, 20)
             };
             this.Controls.Add(panelLeft);
-            BuildLeftSidebar();
+            BuildLeftSidebar(user);
            
 
             // RIGHT PANEL
@@ -73,7 +74,7 @@ namespace ChatMessenger
             panelMain.Click += Form2_Click;
         }
 
-        private void BuildLeftSidebar()
+        private void BuildLeftSidebar(User user)
         {
             // Avatar
             PictureBox avatar = new PictureBox()
@@ -89,7 +90,7 @@ namespace ChatMessenger
             // Name and Status
             panelLeft.Controls.Add(new Label()
             {
-                Text = "Vivek Patel",
+                Text = user.Username,
                 Font = new Font("Segoe UI", 12, FontStyle.Bold),
                 AutoSize = true,
                 Location = new Point(20, 80)

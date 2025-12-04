@@ -1,3 +1,4 @@
+using ChatMessenger.Properties;
 using System;
 using System.Windows.Forms;
 
@@ -13,7 +14,7 @@ namespace ChatMessenger
 
         private void form1_Click(object sender, EventArgs e)
         {
-            Form2 main = new Form2();
+            WelcomePage main = new WelcomePage();
             main.StartPosition = FormStartPosition.CenterScreen;
             main.Show();
             this.Hide();

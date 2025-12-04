@@ -28,18 +28,35 @@
         /// </summary>
         private void InitializeComponent()
         {
+            radioButton1 = new RadioButton();
             SuspendLayout();
             // 
-            // Welcome
+            // radioButton1
+            // 
+            radioButton1.AutoSize = true;
+            radioButton1.Location = new Point(290, 181);
+            radioButton1.Name = "radioButton1";
+            radioButton1.Size = new Size(141, 29);
+            radioButton1.TabIndex = 0;
+            radioButton1.TabStop = true;
+            radioButton1.Text = "radioButton1";
+            radioButton1.UseVisualStyleBackColor = true;
+            radioButton1.CheckedChanged += radioButton1_CheckedChanged;
+            // 
+            // WelcomePage
             // 
             AutoScaleDimensions = new SizeF(10F, 25F);
             AutoScaleMode = AutoScaleMode.Font;
             ClientSize = new Size(800, 450);
-            Name = "Welcome";
+            Controls.Add(radioButton1);
+            Name = "WelcomePage";
             Text = "Welcome";
             ResumeLayout(false);
+            PerformLayout();
         }
 
         #endregion
+
+        private RadioButton radioButton1;
     }
 }

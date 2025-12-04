@@ -10,9 +10,9 @@ using System.Windows.Forms;
 
 namespace ChatMessenger
 {
-    public partial class DirectMessagePage : Form
+    public partial class DrawingGame : Form
     {
-        public DirectMessagePage()
+        public DrawingGame()
         {
             InitializeComponent();
         }

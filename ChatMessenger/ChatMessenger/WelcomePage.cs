@@ -34,11 +34,12 @@ namespace ChatMessenger.Properties
             {
                 Dock = DockStyle.Left,
                 Width = 600,
-                BackColor = Color.DarkBlue,
+                BackColor = Color.MidnightBlue,
                 Padding = new Padding(15, 20, 15, 20)
             };
             this.Controls.Add(PLeft);
-            BuildLeftSidebar();
+            int leftpanelheight = 150;
+            BuildLeftSidebar(ref leftpanelheight);
 
 
             // RIGHT PANEL
@@ -50,13 +51,67 @@ namespace ChatMessenger.Properties
                 Padding = new Padding(20, 20, 20, 20)
             };
             this.Controls.Add(PRight);
-            int rightpanelheight = 50;
+            int rightpanelheight = 100;
             BuildRightSidebar(ref rightpanelheight);
         }
 
-        public void BuildLeftSidebar()
+        public void BuildLeftSidebar(ref int y)
         {
+            Label title = new Label()
+            {
+                Text = "LocaLink",
+                Font = new Font("Segoe UI", 30, FontStyle.Bold),
+                ForeColor = Color.White,
+                AutoSize = true,
+                Location = new Point(125, y)
+            };
+            Label subTitle = new Label()
+            {
+                Text = "Local Network Chat System",
+                Font = new Font("Segoe UI", 15),
+                ForeColor = Color.White,
+                AutoSize = true,
+                Location = new Point(130, y+80)
+            };
+            Label text1 = new Label()
+            {
+                Text = "Discover nearby servers automatically",
+                Font = new Font("Segoe UI", 10),
+                ForeColor = Color.Beige,
+                AutoSize = true,
+                Location = new Point(150, y + 160)
+            };
+            Label text2 = new Label()
+            {
+                Text = "Real-time messaging with multiple users",
+                Font = new Font("Segoe UI", 10),
+                ForeColor = Color.Beige,
+                AutoSize = true,
+                Location = new Point(150, y + 190)
+            };
+            Label text3 = new Label()
+            {
+                Text = "Self-hosted servers on local network",
+                Font = new Font("Segoe UI", 10),
+                ForeColor = Color.Beige,
+                AutoSize = true,
+                Location = new Point(150, y + 220)
+            };
+            Label text4 = new Label()
+            {
+                Text = "Collaborative drawing mini-games",
+                Font = new Font("Segoe UI", 10),
+                ForeColor = Color.Beige,
+                AutoSize = true,
+                Location = new Point(150, y + 250)
+            };
 
+            PLeft.Controls.Add(title);
+            PLeft.Controls.Add(subTitle);
+            PLeft.Controls.Add(text1);
+            PLeft.Controls.Add(text2);
+            PLeft.Controls.Add(text3);
+            PLeft.Controls.Add(text4);
         }
 
         //right panel info carryover

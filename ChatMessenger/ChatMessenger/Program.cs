@@ -1,17 +1,33 @@
+using System;
+using System.Threading.Tasks;
+using System.Windows.Forms;
+
 namespace ChatMessenger
 {
     internal static class Program
     {
-        /// <summary>
-        ///  The main entry point for the application.
-        /// </summary>
+        private static DiscoveryServer discoveryServer;
+        private static JsonWebSocketServer webSocketServer;
+
         [STAThread]
         static void Main()
         {
-            // To customize application configuration such as set high DPI settings or default font,
-            // see https://aka.ms/applicationconfiguration.
             ApplicationConfiguration.Initialize();
+
+            StartServers();
+
             Application.Run(new Form1());
+        }
+
+        static void StartServers()
+        {
+            discoveryServer = new DiscoveryServer(5000, 6000);
+            discoveryServer.Enable();
+            Task.Run(() => discoveryServer.StartAsync());
+
+            webSocketServer = new JsonWebSocketServer(6000);
+            webSocketServer.Enable();
+            Task.Run(() => webSocketServer.StartAsync());
         }
     }
 }

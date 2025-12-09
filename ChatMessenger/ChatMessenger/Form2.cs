@@ -20,17 +20,7 @@ namespace ChatMessenger
 
         private void Form2_Click(object sender, EventArgs e)
         {
-            try
-            {
-                Form3 main = new Form3(User);
-                main.StartPosition = FormStartPosition.CenterScreen;
-                main.Show();
-                this.Hide();
-            }
-            catch (Exception ex)
-            {
-                MessageBox.Show(ex.Message);
-            }
+
         }
 
         private void BuildUI(User user)

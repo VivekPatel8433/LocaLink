@@ -1,37 +1,56 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.ComponentModel;
-using System.Data;
 using System.Drawing;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using System.Windows.Forms;
+using System.Threading.Tasks;
+using System.Collections.Generic;
 
 namespace ChatMessenger
 {
     public partial class Form3 : Form
     {
-        Panel panelLeft;
-        Panel panelMain;
-        Panel panelRight;
-        User User;
+        private Panel panelLeft;
+        private Panel panelMain;
+        private Panel panelRight;
+        private User currentUser;
+
+        //Chat controls
+        private FlowLayoutPanel chatPanel;
+        private TextBox chatInput;
+        private Button sendButton;
+
+        //WebSocket client
+        private JsonWebSocketClient wsClient;
+
+        //Discovery
+        private DiscoveryClient discoveryClient;
+        private DiscoveryServer discoveryServer;
+        private FlowLayoutPanel serverListPanel;
 
         public Form3(User user)
         {
             InitializeComponent();
-            BuildUI(user);
-           User = user;
+            currentUser = user;
+            BuildUI();
+            this.Load += Form3_Load;
         }
 
-        private void BuildUI(User user)
+        private void BuildUI()
         {
             this.Text = "RandomChatPage";
             this.BackColor = ColorTranslator.FromHtml("#F5F7FA");
             this.Size = new Size(1400, 800);
             this.FormBorderStyle = FormBorderStyle.FixedSingle;
 
-            // LEFT PANEL
+            //MAIN PANEL
+            panelMain = new Panel()
+            {
+                Dock = DockStyle.Fill,
+                BackColor = ColorTranslator.FromHtml("#F5F7FA")
+            };
+            this.Controls.Add(panelMain);
+            BuildMainHomepage();
+
+            //LEFT PANEL
             panelLeft = new Panel()
             {
                 Dock = DockStyle.Left,
@@ -40,10 +59,9 @@ namespace ChatMessenger
                 Padding = new Padding(15, 20, 15, 20)
             };
             this.Controls.Add(panelLeft);
-            BuildLeftSidebar(user);
+            BuildLeftSidebar();
 
-
-            // RIGHT PANEL
+            //RIGHT PANEL
             panelRight = new Panel()
             {
                 Dock = DockStyle.Right,
@@ -53,20 +71,10 @@ namespace ChatMessenger
             };
             this.Controls.Add(panelRight);
             BuildRightSidebar();
-
-            // MAIN PANEL
-            panelMain = new Panel()
-            {
-                Dock = DockStyle.Fill,
-                BackColor = ColorTranslator.FromHtml("#F5F7FA")
-            };
-            this.Controls.Add(panelMain);
-            BuildMainArea();
         }
-
-        private void BuildLeftSidebar(User user)
+        private void BuildLeftSidebar()
         {
-            // Avatar
+            //Avatar
             PictureBox avatar = new PictureBox()
             {
                 Size = new Size(60, 60),
@@ -76,15 +84,16 @@ namespace ChatMessenger
             };
             panelLeft.Controls.Add(avatar);
 
-            // Name and Status
+            //Username
             panelLeft.Controls.Add(new Label()
             {
-                Text = user.Username,
+                Text = currentUser.Username,
                 Font = new Font("Segoe UI", 12, FontStyle.Bold),
                 AutoSize = true,
                 Location = new Point(20, 80)
             });
 
+            //Status
             panelLeft.Controls.Add(new Label()
             {
                 Text = "Online",
@@ -94,14 +103,13 @@ namespace ChatMessenger
                 Location = new Point(20, 105)
             });
 
-            // Menu
             int y = 150;
             panelLeft.Controls.Add(CreateMenuButton("Direct Messages", ref y));
             panelLeft.Controls.Add(CreateMenuButton("Server Chat", ref y));
-            panelLeft.Controls.Add(CreateMenuButton("Random Chat", ref y, true));
+            panelLeft.Controls.Add(CreateMenuButton("Random Chat", ref y));
             panelLeft.Controls.Add(CreateMenuButton("Drawing Game", ref y));
 
-            // Recent Chats label
+            //Recent Chats
             Label recentLabel = new Label()
             {
                 Text = "Recent Chats",
@@ -111,18 +119,16 @@ namespace ChatMessenger
             };
             panelLeft.Controls.Add(recentLabel);
 
-            // FlowLayoutPanel for chat items
             FlowLayoutPanel recentChatsPanel = new FlowLayoutPanel()
             {
                 Location = new Point(20, y + 50),
-                Size = new Size(panelLeft.Width - 40, 400),
+                Size = new Size(panelLeft.Width - 40, panelLeft.Height - (y + 50) - 20),
                 AutoScroll = true,
                 FlowDirection = FlowDirection.TopDown,
                 WrapContents = false
             };
             panelLeft.Controls.Add(recentChatsPanel);
 
-            // Example recent chats
             string[] recentChats = { "Alice", "Bob", "Charlie", "David" };
             foreach (var chatName in recentChats)
             {
@@ -138,7 +144,7 @@ namespace ChatMessenger
                     Size = new Size(40, 40),
                     Location = new Point(5, 5),
                     SizeMode = PictureBoxSizeMode.Zoom,
-                    Image = Image.FromFile(@"Resources\Assets\RecentChats.jpg") // replace with avatar
+                    Image = Image.FromFile(@"Resources\Assets\RecentChats.jpg")
                 };
                 chatItem.Controls.Add(chatAvatar);
 
@@ -153,8 +159,8 @@ namespace ChatMessenger
 
                 recentChatsPanel.Controls.Add(chatItem);
             }
-
         }
+
         private Button CreateMenuButton(string text, ref int y, bool highlight = false)
         {
             Button btn = new Button()
@@ -170,196 +176,248 @@ namespace ChatMessenger
                 Font = highlight ? new Font("Segoe UI", 10, FontStyle.Bold) : new Font("Segoe UI", 10)
             };
             btn.FlatAppearance.BorderSize = 0;
+            btn.Click += (s, e) => MessageBox.Show($"{text} clicked!");
             y += 45;
             return btn;
         }
         private void BuildRightSidebar()
         {
-            // Avatar
-            PictureBox avatar = new PictureBox()
-            {
-                Size = new Size(90, 90),
-                SizeMode = PictureBoxSizeMode.Zoom,
-                Location = new Point(90, 10),
-                Image = Image.FromFile(@"Resources\Assets\ProfileSearch.png")
-            };
-            panelRight.Controls.Add(avatar);
+            panelRight.Controls.Clear();
 
-            panelRight.Controls.Add(new Label()
+            Label title = new Label()
             {
-                Text = "Anonymous User",
+                Text = "Available Servers",
                 Font = new Font("Segoe UI", 12, FontStyle.Bold),
                 AutoSize = true,
-                Location = new Point(40, 100)
-            });
-
-            panelRight.Controls.Add(new Label()
-            {
-                Text = "Random Chat Partner",
-                Font = new Font("Segoe UI", 12),
-                AutoSize = true,
-                Location = new Point(30,120)
-            });
-
-
-            // Separator
-            panelRight.Controls.Add(new Panel()
-            {
-                Height = 1,
-                Dock = DockStyle.Top,
-                BackColor = Color.LightGray,
-                Margin = new Padding(0, 20, 0, 20)
-            });
-
-            // Toggles
-            int y = 180;
-
-            // Start Drawing Game button
-            Button drawingBtn = new Button()
-            {
-                Text = "Start Drawing Game",
-                Size = new Size(220, 35),
-                Location = new Point(25, y),
-                BackColor = ColorTranslator.FromHtml("#0F172A"),
-                ForeColor = Color.White,
-                FlatStyle = FlatStyle.Flat
+                Location = new Point(20, 20)
             };
-            drawingBtn.FlatAppearance.BorderSize = 0;
-            panelRight.Controls.Add(drawingBtn);
-            y += 60;
+            panelRight.Controls.Add(title);
 
-            // Add Friend button
-            Button shareScreenBtn = new Button()
+            serverListPanel = new FlowLayoutPanel()
             {
-                Text = "Add A Friend",
-                Size = new Size(220, 35),
-                Location = new Point(25, y),
-                BackColor = ColorTranslator.FromHtml("#0F172A"),
-                ForeColor = Color.White,
-                FlatStyle = FlatStyle.Flat
+                Location = new Point(10, 50),
+                Size = new Size(panelRight.Width - 20, panelRight.Height - 60),
+                AutoScroll = true,
+                FlowDirection = FlowDirection.TopDown,
+                WrapContents = false
             };
-            shareScreenBtn.FlatAppearance.BorderSize = 0;
-            panelRight.Controls.Add(shareScreenBtn);
-            y += 65;
-
-            // Block User button
-            Button sendFileBtn = new Button()
-            {
-                Text = "Block User",
-                Size = new Size(220, 35),
-                Location = new Point(25, y),
-                BackColor = ColorTranslator.FromHtml("#0F172A"),
-                ForeColor = Color.White,
-                FlatStyle = FlatStyle.Flat
-            };
-            sendFileBtn.FlatAppearance.BorderSize = 0;
-            panelRight.Controls.Add(sendFileBtn);
-            y += 70;
-
-            // Quick Actions
-            Label quickLabel = new Label()
-            {
-                Text = "Quick Actions",
-                Font = new Font("Segoe UI", 11, FontStyle.Bold),
-                AutoSize = true,
-                Location = new Point(5, y - 30)
-            };
-            panelRight.Controls.Add(quickLabel);
-
-
-            // Find New Partner
-            Button newPartnerBtn = new Button()
-            {
-                Text = "Find New Partner",
-                Size = new Size(220, 35),
-                Location = new Point(25, y),
-                BackColor = ColorTranslator.FromHtml("#EF4444"),
-                ForeColor = Color.White,
-                FlatStyle = FlatStyle.Flat
-            };
-            newPartnerBtn.FlatAppearance.BorderSize = 0;
-            panelRight.Controls.Add(newPartnerBtn);
-            y += 60;
-
-            // Find New Partner
-            Button muteChatBtn = new Button()
-            {
-                Text = "Mute Chat",
-                Size = new Size(220, 35),
-                Location = new Point(25, y),
-                BackColor = ColorTranslator.FromHtml("#EF4444"),
-                ForeColor = Color.White,
-                FlatStyle = FlatStyle.Flat
-            };
-            muteChatBtn.FlatAppearance.BorderSize = 0;
-            panelRight.Controls.Add(muteChatBtn);
-            y += 60;
-
-            // Find New Partner
-            Button exportChatBtn = new Button()
-            {
-                Text = "Export Chat",
-                Size = new Size(220, 35),
-                Location = new Point(25, y),
-                BackColor = ColorTranslator.FromHtml("#EF4444"),
-                ForeColor = Color.White,
-                FlatStyle = FlatStyle.Flat
-            };
-            exportChatBtn.FlatAppearance.BorderSize = 0;
-            panelRight.Controls.Add(exportChatBtn);
-            y += 60;
-
-            // Network Status Panel
-            Panel networkStatus = new Panel()
-            {
-                Height = 120,
-                Dock = DockStyle.Bottom,
-                BackColor = Color.FromArgb(230, 230, 230),
-                Padding = new Padding(10)
-            };
-            panelRight.Controls.Add(networkStatus);
-
-            // Title
-            Label networkTitle = new Label()
-            {
-                Text = "Network Status",
-                Font = new Font("Segoe UI", 10, FontStyle.Bold),
-                AutoSize = true,
-                Location = new Point(5, 5)
-            };
-            networkStatus.Controls.Add(networkTitle);
-
-            // Connection status
-            Label connectionStatus = new Label()
-            {
-                Text = "Connection: Connected",
-                Font = new Font("Segoe UI", 9),
-                AutoSize = true,
-                Location = new Point(5, 25),
-                ForeColor = Color.Green
-            };
-            networkStatus.Controls.Add(connectionStatus);
-
-            // Server IP
-            Label serverIP = new Label()
-            {
-                Text = "Server: 198.165.1.25",
-                Font = new Font("Segoe UI", 9),
-                AutoSize = true,
-                Location = new Point(5, 45)
-            };
-            networkStatus.Controls.Add(serverIP);
-
+            panelRight.Controls.Add(serverListPanel);
         }
 
-
-        private void BuildMainArea()
+        private void UpdateAvailableServers(List<ServerIPPort> servers)
         {
+            if (serverListPanel == null) return;
 
+            serverListPanel.Controls.Clear();
+
+            foreach (var server in servers)
+            {
+                Button serverBtn = new Button()
+                {
+                    Text = server.ToString(),
+                    Size = new Size(serverListPanel.Width - 10, 40),
+                    BackColor = ColorTranslator.FromHtml("#0F172A"),
+                    ForeColor = Color.White,
+                    FlatStyle = FlatStyle.Flat
+                };
+                serverBtn.FlatAppearance.BorderSize = 0;
+                serverBtn.Click += async (s, e) =>
+                {
+                    //Connect to the server via WebSocket
+                    wsClient = new JsonWebSocketClient($"ws://{server.IP}:{server.Port}");
+                    wsClient.OnMessage += (msg) =>
+                    {
+                        if (msg.Type == "chat" && chatPanel != null)
+                        {
+                            this.Invoke(() => AddChatMessage($"Friend: {msg.Data}", Color.LightGray));
+                        }
+                    };
+                    await wsClient.StartAsync();
+                    await wsClient.SendAsync(new WsMessage
+                    {
+                        Type = "join",
+                        Name = currentUser.Username
+                    });
+
+                    //Switch to chat panel
+                    ShowChatPanel();
+                };
+                serverListPanel.Controls.Add(serverBtn);
+            }
         }
-        private void Form3_Load(object sender, EventArgs e)
+        private void BuildMainHomepage()
         {
+            panelMain.Controls.Clear();
 
+            Label title = new Label()
+            {
+                Text = "Welcome to LocaLink",
+                Font = new Font("Segoe UI", 20, FontStyle.Bold),
+                AutoSize = true,
+                TextAlign = ContentAlignment.MiddleCenter
+            };
+            panelMain.Controls.Add(title);
+
+            Label description = new Label()
+            {
+                Text = "Connect with users on your local network.\nCreate a server to start chatting.",
+                Font = new Font("Segoe UI", 10),
+                AutoSize = true,
+                MaximumSize = new Size(500, 0),
+                TextAlign = ContentAlignment.MiddleCenter
+            };
+            panelMain.Controls.Add(description);
+
+            Button createBtn = new Button()
+            {
+                Text = "Create Server",
+                Size = new Size(200, 40),
+                BackColor = Color.White,
+                ForeColor = Color.Black,
+                FlatStyle = FlatStyle.Flat
+            };
+            createBtn.FlatAppearance.BorderSize = 1;
+            createBtn.Click += CreateBtn_Click;
+            panelMain.Controls.Add(createBtn);
+
+            //Center the controls after they are added
+            panelMain.Resize += (s, e) =>
+            {
+                title.Location = new Point((panelMain.Width - title.Width) / 2, 150);
+                description.Location = new Point((panelMain.Width - description.Width) / 2, title.Bottom + 20);
+                createBtn.Location = new Point((panelMain.Width - createBtn.Width) / 2, description.Bottom + 30);
+            };
+
+            //Trigger resize once to position them initially
+            panelMain.PerformLayout();
+            panelMain.Invalidate();
         }
+
+
+        private void CreateBtn_Click(object sender, EventArgs e)
+        {
+            // Start local discovery server
+            discoveryServer = new DiscoveryServer(8888, 6000); // broadcastPort, wsPort
+            discoveryServer.Enable();
+            Task.Run(async () => await discoveryServer.StartAsync());
+
+            // Show chat panel locally
+            ShowChatPanel();
+            StartWebSocket();
+        }
+
+        private void ShowChatPanel()
+        {
+            panelMain.Controls.Clear();
+
+            chatPanel = new FlowLayoutPanel()
+            {
+                Location = new Point(20, 20),
+                Size = new Size(panelMain.Width - 40, panelMain.Height - 80),
+                AutoScroll = true,
+                FlowDirection = FlowDirection.TopDown,
+                WrapContents = false
+            };
+            panelMain.Controls.Add(chatPanel);
+
+            chatInput = new TextBox()
+            {
+                Size = new Size(panelMain.Width - 140, 30),
+                Location = new Point(20, panelMain.Height - 50)
+            };
+            panelMain.Controls.Add(chatInput);
+
+            sendButton = new Button()
+            {
+                Text = "Send",
+                Size = new Size(100, 30),
+                Location = new Point(panelMain.Width - 110, panelMain.Height - 50)
+            };
+            panelMain.Controls.Add(sendButton);
+
+            //Send message on button click
+            sendButton.Click += async (s, e) => await SendMessage();
+
+            //Send message when pressing Enter
+            chatInput.KeyDown += async (s, e) =>
+            {
+                if (e.KeyCode == Keys.Enter)
+                {
+                    e.SuppressKeyPress = true;
+                    await SendMessage();
+                }
+            };
+        }
+
+        private async Task SendMessage()
+        {
+            if (!string.IsNullOrWhiteSpace(chatInput.Text) && wsClient != null)
+            {
+                await wsClient.SendAsync(new WsMessage
+                {
+                    Type = "chat",
+                    Data = chatInput.Text
+                });
+
+                AddChatMessage($"You: {chatInput.Text}", Color.LightBlue);
+                chatInput.Clear();
+            }
+        }
+
+
+        private void AddChatMessage(string text, Color backColor)
+        {
+            Label lbl = new Label()
+            {
+                Text = text,
+                AutoSize = true,
+                MaximumSize = new Size(chatPanel.Width - 20, 0),
+                BackColor = backColor,
+                Padding = new Padding(5)
+            };
+            chatPanel.Controls.Add(lbl);
+            chatPanel.ScrollControlIntoView(lbl);
+        }
+
+
+        private void StartWebSocket()
+        {
+            wsClient = new JsonWebSocketClient("ws://localhost:6000");
+            wsClient.OnMessage += (msg) =>
+            {
+                if (msg.Type == "chat" && chatPanel != null)
+                {
+                    this.Invoke(() => AddChatMessage($"Friend: {msg.Data}", Color.LightGray));
+                }
+            };
+
+            Task.Run(async () =>
+            {
+                await wsClient.StartAsync();
+                await wsClient.SendAsync(new WsMessage
+                {
+                    Type = "join",
+                    Name = currentUser.Username
+                });
+            });
+        }
+
+        private async void Form3_Load(object sender, EventArgs e)
+        {
+            discoveryClient = new DiscoveryClient(8888);
+            await DiscoverServersLoop();
+        }
+
+        private async Task DiscoverServersLoop()
+        {
+            while (true)
+            {
+                await discoveryClient.DiscoverAsync();
+                var servers = discoveryClient.GetDiscoveredServers();
+                this.Invoke(() => UpdateAvailableServers(servers));
+                await Task.Delay(5000); //scan every 5 sec
+            }
+        }
+
     }
 }

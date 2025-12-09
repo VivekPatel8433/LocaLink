@@ -1,22 +1,21 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace ChatMessenger
 {
     public class User
     {
-        public string Username { get; }
-        public string phonenumber { get; }
+        public string Username { get; set; }
+        public string PhoneNumber { get; set; }
 
-        public User (string username, string phoneNumber)
+        public User(string username, string phoneNumber)
         {
             Username = username;
-            phonenumber = phoneNumber;
+            PhoneNumber = phoneNumber;
         }
 
-
+        public override string ToString()
+        {
+            return $"{Username} ({PhoneNumber})";
+        }
     }
 }

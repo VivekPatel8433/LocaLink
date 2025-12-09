@@ -1,11 +1,5 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.ComponentModel;
-using System.Data;
 using System.Drawing;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using System.Windows.Forms;
 
 namespace ChatMessenger.Properties
@@ -15,13 +9,20 @@ namespace ChatMessenger.Properties
         Panel PLeft;
         Panel PRight;
 
+        // Right panel controls
+        TextBox username;
+        TextBox phoneNumber;
+        RadioButton customUser;
+        RadioButton anonymousUser;
+        Button login;
+        User newuser;
+
         public WelcomePage()
         {
             InitializeComponent();
             BuildUI();
         }
 
-        
         private void BuildUI()
         {
             this.Text = "Welcome";
@@ -38,9 +39,9 @@ namespace ChatMessenger.Properties
                 Padding = new Padding(15, 20, 15, 20)
             };
             this.Controls.Add(PLeft);
+
             int leftpanelheight = 150;
             BuildLeftSidebar(ref leftpanelheight);
-
 
             // RIGHT PANEL
             PRight = new Panel()
@@ -51,10 +52,12 @@ namespace ChatMessenger.Properties
                 Padding = new Padding(20, 20, 20, 20)
             };
             this.Controls.Add(PRight);
+
             int rightpanelheight = 100;
             BuildRightSidebar(ref rightpanelheight);
         }
 
+        // LEFT PANEL CONTENT
         public void BuildLeftSidebar(ref int y)
         {
             Label title = new Label()
@@ -65,14 +68,16 @@ namespace ChatMessenger.Properties
                 AutoSize = true,
                 Location = new Point(125, y)
             };
+
             Label subTitle = new Label()
             {
                 Text = "Local Network Chat System",
                 Font = new Font("Segoe UI", 15),
                 ForeColor = Color.White,
                 AutoSize = true,
-                Location = new Point(130, y+80)
+                Location = new Point(130, y + 80)
             };
+
             Label text1 = new Label()
             {
                 Text = "Discover nearby servers automatically",
@@ -114,17 +119,9 @@ namespace ChatMessenger.Properties
             PLeft.Controls.Add(text4);
         }
 
-        //right panel info carryover
-        TextBox username;
-        TextBox phoneNumber;
-        RadioButton customUser;
-        RadioButton anonymousUser;
-        Button login;
-        User newuser;
+        // RIGHT PANEL CONTENT
         public void BuildRightSidebar(ref int y)
         {
-
-            //Title
             Label title = new Label()
             {
                 Text = "Welcome",
@@ -132,6 +129,7 @@ namespace ChatMessenger.Properties
                 AutoSize = true,
                 Location = new Point(200, y)
             };
+
             Label subTitle = new Label()
             {
                 Text = "Join Your Local Chat",
@@ -141,7 +139,7 @@ namespace ChatMessenger.Properties
                 Location = new Point(200, y + 50)
             };
 
-            //Login/Signup
+            // USERNAME
             Label labelUsername = new Label()
             {
                 Text = "Username",
@@ -149,15 +147,16 @@ namespace ChatMessenger.Properties
                 AutoSize = true,
                 Location = new Point(200, y + 120)
             };
+
             username = new TextBox()
             {
                 PlaceholderText = "Enter Your Username",
                 Font = new Font("Segoe UI", 10),
-                AutoSize = true,
-                Size = new Size(400, 10),
-                Location = new Point(200, y + 145),
+                Size = new Size(400, 30),
+                Location = new Point(200, y + 145)
             };
 
+            // PHONE NUMBER
             Label labelPhoneNumber = new Label()
             {
                 Text = "Phone Number (optional)",
@@ -165,26 +164,27 @@ namespace ChatMessenger.Properties
                 AutoSize = true,
                 Location = new Point(200, y + 190)
             };
+
             phoneNumber = new TextBox()
             {
                 PlaceholderText = "(123)456-7890",
                 Font = new Font("Segoe UI", 10),
                 ForeColor = Color.Gray,
-                AutoSize = true,
-                Size = new Size(400, 10),
+                Size = new Size(400, 30),
                 Location = new Point(200, y + 215),
                 MaxLength = 10
             };
+
             Label sublabelPhone = new Label()
             {
-                Text = "Register with mobile for persisent data",
-                Font = new Font("Segoe UI", 5, FontStyle.Bold),
+                Text = "Register with mobile for persistent data",
+                Font = new Font("Segoe UI", 8, FontStyle.Bold),
                 ForeColor = Color.Gray,
                 AutoSize = true,
                 Location = new Point(200, y + 250)
             };
 
-            //user join mode
+            // JOIN MODE
             Label labelUsermode = new Label()
             {
                 Text = "Join Mode",
@@ -192,15 +192,14 @@ namespace ChatMessenger.Properties
                 AutoSize = true,
                 Location = new Point(200, y + 300)
             };
+
             customUser = new RadioButton()
             {
                 Text = "Custom User",
                 Font = new Font("Segoe UI", 10),
                 AutoSize = true,
-                Size = new Size(400, 10),
                 Location = new Point(200, y + 330),
                 Checked = true
-
             };
 
             anonymousUser = new RadioButton()
@@ -208,46 +207,32 @@ namespace ChatMessenger.Properties
                 Text = "Anonymous User",
                 Font = new Font("Segoe UI", 10),
                 AutoSize = true,
-                Size = new Size(400, 10),
                 Location = new Point(200, y + 360)
             };
 
-            //to enable and disable input for anonymous
-            customUser.CheckedChanged += (sender, args) =>
+            customUser.CheckedChanged += (s, a) =>
             {
                 username.Enabled = true;
                 phoneNumber.Enabled = true;
             };
-            anonymousUser.CheckedChanged += (sender, args) =>
+
+            anonymousUser.CheckedChanged += (s, a) =>
             {
                 username.Enabled = false;
                 phoneNumber.Enabled = false;
             };
 
+            // LOGIN BUTTON
             login = new Button()
             {
                 Text = "Login",
                 Font = new Font("Segoe UI", 10),
-                AutoSize = true,
+                Size = new Size(100, 35),
                 Location = new Point(200, y + 400)
             };
-            login.Click += (sender, args) =>
-            {
-            
-                if (customUser.Checked)
-                {
-                    newuser = new User(username.Text, phoneNumber.Text);
-                }
-                else
-                {
-                    newuser = new User("Anonymous", "1234567890");
-                }
-                Form2 form2 = new Form2(newuser);
-                form2.StartPosition = FormStartPosition.CenterScreen;
-                form2.Show();
-                this.Hide();
-            };
+            login.Click += Login_Click;
 
+            // ADD CONTROLS TO PANEL
             PRight.Controls.Add(title);
             PRight.Controls.Add(subTitle);
             PRight.Controls.Add(labelUsername);
@@ -259,6 +244,28 @@ namespace ChatMessenger.Properties
             PRight.Controls.Add(customUser);
             PRight.Controls.Add(anonymousUser);
             PRight.Controls.Add(login);
+        }
+
+        private void Login_Click(object sender, EventArgs e)
+        {
+            if (customUser.Checked)
+            {
+                if (string.IsNullOrWhiteSpace(username.Text))
+                {
+                    MessageBox.Show("Please enter a username.");
+                    return;
+                }
+                newuser = new User(username.Text.Trim(), phoneNumber.Text.Trim());
+            }
+            else
+            {
+                newuser = new User("Anonymous", "");
+            }
+
+            Form3 form3 = new Form3(newuser);
+            form3.StartPosition = FormStartPosition.CenterScreen;
+            form3.Show();
+            this.Hide();
         }
     }
 }

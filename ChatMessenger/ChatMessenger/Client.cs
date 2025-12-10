@@ -78,13 +78,14 @@ public class DiscoveryClient
                 {
                     result = receiveTask.Result;
                     reply = Encoding.UTF8.GetString(result.Buffer);
-                } else
+                }
+                else
                 {
                     // timeout
                     // Console.WriteLine("Receive timeout.");
                     continue;
                 }
-                
+
                 // Console.WriteLine($"Found service: {result.RemoteEndPoint} => {reply}");
                 if (reply.Split(';')[0] == "DISCOVER_RESPONSE_LOCALINK")
                 {
@@ -207,5 +208,53 @@ public class JsonWebSocketClient
         running = false;
         if (socket.State == WebSocketState.Open)
             socket.CloseAsync(WebSocketCloseStatus.NormalClosure, "Bye", CancellationToken.None);
+    }
+}
+
+
+public static class PrivateDmHelper
+{
+
+    public static async Task<int> CreatePrivateServerAndInvite(JsonWebSocketServer callerServer, string targetUserName, string fromName)
+    {
+        try
+        {
+            // choose a random port in a safe-ish range
+            var rand = new Random();
+            int port = rand.Next(6001, 65000);
+
+            // create discovery server to advertise this private DM
+            var discovery = new DiscoveryServer(8888, port);
+            discovery.Enable();
+            _ = Task.Run(async () => await discovery.StartAsync());
+
+            // create and start JsonWebSocketServer
+            var privateServer = new JsonWebSocketServer(port)
+            {
+                DiscoveryRef = discovery
+            };
+            privateServer.Enable();
+            _ = Task.Run(async () => await privateServer.StartAsync());
+
+            // Give the server a moment to start listening (best-effort)
+            await Task.Delay(250);
+
+            // Send DM invite to the target user via callerServer
+            bool sent = await callerServer.SendDmInvite(targetUserName, fromName, port);
+            if (!sent)
+            {
+                // if invite failed, disable and stop the created server/discovery
+                discovery.Disable();
+                privateServer.Disable();
+                return -1;
+            }
+
+            return port;
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"CreatePrivateServerAndInvite error: {ex.Message}");
+            return -1;
+        }
     }
 }

@@ -13,7 +13,7 @@ namespace ChatMessenger
         private DiscoveryClient discoveryClient;
         private DiscoveryServer discoveryServer;
         private Action<string> OpenServerChatCallback;
-
+        private Button createServerBtn;
         private FlowLayoutPanel serversPanel;
 
         public ServerChatPage(User user, DiscoveryClient client, DiscoveryServer server, Action<string> openServerChat)
@@ -36,12 +36,21 @@ namespace ChatMessenger
 
             Label title = new Label()
             {
-                Text = "Available Servers",
+                Text = "Available Servershmm",
                 Font = new Font("Segoe UI", 14, FontStyle.Bold),
                 Location = new Point(20, 20),
                 AutoSize = true
             };
             this.Controls.Add(title);
+
+            createServerBtn = new Button()
+            {
+                Text = "Create server",
+                Location = new Point(200, 600),
+                AutoSize = true,
+                Font = new Font("Segoe UI", 14, FontStyle.Bold)
+            };
+            this.Controls.Add(createServerBtn);
 
             serversPanel = new FlowLayoutPanel()
             {
@@ -53,6 +62,8 @@ namespace ChatMessenger
                 Anchor = AnchorStyles.Top | AnchorStyles.Bottom | AnchorStyles.Left | AnchorStyles.Right
             };
             this.Controls.Add(serversPanel);
+
+
         }
 
         private async void ServerChatPage_Load(object sender, EventArgs e)

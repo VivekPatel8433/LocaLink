@@ -10,6 +10,7 @@ namespace ChatMessenger
         {
             InitializeComponent();
             this.Text = "LocaLink";
+            this.Size = new Size(1400, 800);
             StartPosition = FormStartPosition.CenterScreen;
         }
 

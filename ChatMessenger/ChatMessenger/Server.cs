@@ -19,6 +19,7 @@ public class DiscoveryServer
     public DiscoveryServer(int listenPort, int wsPort)
     {
         udp = new UdpClient(listenPort);
+        udp.Client.SetSocketOption(SocketOptionLevel.Socket, SocketOptionName.ReuseAddress, true);
         Port = wsPort;
     }
 
@@ -71,6 +72,58 @@ public class User
     }
 }
 
+// ---------- NEW model for drawing stroke ----------
+public class DrawingStroke
+{
+    public int X1 { get; set; }
+    public int Y1 { get; set; }
+    public int X2 { get; set; }
+    public int Y2 { get; set; }
+    public int ColorArgb { get; set; }
+    public int Size { get; set; } = 4;
+    public string User { get; set; } = "";
+    public long Timestamp { get; set; } = DateTimeOffset.UtcNow.ToUnixTimeMilliseconds();
+}
+
+// ---------- NEW drawing state stored in memory ----------
+public class DrawingState
+{
+    private readonly List<DrawingStroke> strokes = new List<DrawingStroke>();
+    private readonly object locker = new object();
+
+    public void AddStroke(DrawingStroke s)
+    {
+        lock (locker)
+        {
+            strokes.Add(s);
+        }
+    }
+
+    public List<DrawingStroke> GetAllStrokes()
+    {
+        lock (locker)
+        {
+            // return a shallow copy to avoid locking while clients read
+            return new List<DrawingStroke>(strokes);
+        }
+    }
+
+    public void Clear()
+    {
+        lock (locker)
+        {
+            strokes.Clear();
+        }
+    }
+
+    // Hook to persist to DB (user will implement later)
+    public void SaveToDatabase()
+    {
+        // For now this is a no-op; later replace with real DB logic.
+        // Example: store strokes into a SQL table (StrokeId, X1, Y1, X2, Y2, ColorArgb, Size, User, Timestamp)
+    }
+}
+
 public class JsonWebSocketServer
 {
     public int Port { get; set; }
@@ -80,6 +133,9 @@ public class JsonWebSocketServer
     private readonly string ManagerToken = "";
 
     public DiscoveryServer? DiscoveryRef { get; set; } = null;
+
+    // NEW: drawing state in memory
+    public DrawingState Drawing { get; private set; } = new DrawingState();
 
     public JsonWebSocketServer(int port)
     {
@@ -147,7 +203,21 @@ public class JsonWebSocketServer
             if (result.MessageType == WebSocketMessageType.Close) break;
 
             string json = Encoding.UTF8.GetString(buffer, 0, result.Count);
-            var msg = JsonSerializer.Deserialize<WsMessage>(json)!;
+            WsMessage msg = null;
+            try
+            {
+                msg = JsonSerializer.Deserialize<WsMessage>(json, new JsonSerializerOptions
+                {
+                    PropertyNameCaseInsensitive = true
+                })!;
+            }
+            catch
+            {
+                // ignore malformed
+                continue;
+            }
+
+            if (msg == null) continue;
 
             if (msg.Type == "ping")
             {
@@ -175,8 +245,23 @@ public class JsonWebSocketServer
                     Token = token
                 });
 
-                // After join, optionally send current user list to this client
+                // send user list
                 await SendUserListToSocket(socket);
+
+                // NEW: send current drawing strokes to this newly joined client
+                try
+                {
+                    var strokes = Drawing.GetAllStrokes();
+                    await SendJsonAsync(socket, new WsMessage
+                    {
+                        Type = "draw_load",
+                        Data = strokes // will be serialized as array of strokes
+                    });
+                }
+                catch (Exception ex)
+                {
+                    Console.WriteLine("Error sending draw_load: " + ex.Message);
+                }
             }
 
             if (msg.Type == "chat")
@@ -184,7 +269,73 @@ public class JsonWebSocketServer
                 await BroadcastChatAsync(socket, msg.Data?.ToString() ?? "");
             }
 
+            // NEW: handle incoming stroke
+            if (msg.Type == "draw")
+            {
+                // msg.Data is expected to be a JSON object representing DrawingStroke
+                try
+                {
+                    // parse data into DrawingStroke
+                    // Since WsMessage.Data is object, the deserialized type may be JsonElement
+                    DrawingStroke stroke = null;
+                    if (msg.Data is JsonElement je && je.ValueKind != JsonValueKind.Undefined)
+                    {
+                        stroke = je.Deserialize<DrawingStroke>(new JsonSerializerOptions { PropertyNameCaseInsensitive = true });
+                    }
+                    else
+                    {
+                        // fallback: try serialize->deserialize
+                        stroke = JsonSerializer.Deserialize<DrawingStroke>(JsonSerializer.Serialize(msg.Data));
+                    }
 
+                    if (stroke != null)
+                    {
+                        if (string.IsNullOrEmpty(stroke.User) && !string.IsNullOrEmpty(msg.Name))
+                            stroke.User = msg.Name;
+
+                        Drawing.AddStroke(stroke);
+
+                        // Broadcast this stroke to all connected clients (including sender)
+                        var payload = new WsMessage { Type = "draw", Data = stroke };
+                        string payloadJson = JsonSerializer.Serialize(payload);
+                        byte[] payloadBytes = Encoding.UTF8.GetBytes(payloadJson);
+
+                        foreach (var u in users)
+                        {
+                            if (u.Socket.State == WebSocketState.Open)
+                            {
+                                try
+                                {
+                                    await u.Socket.SendAsync(payloadBytes, WebSocketMessageType.Text, true, CancellationToken.None);
+                                }
+                                catch { /* ignore send errors per-client */ }
+                            }
+                        }
+                    }
+                }
+                catch (Exception ex)
+                {
+                    Console.WriteLine("Error processing draw message: " + ex.Message);
+                }
+            }
+
+            // Optional: request to persist the drawing to DB (server-side)
+            if (msg.Type == "draw_save")
+            {
+                try
+                {
+                    // call Drawing.SaveToDatabase() or your custom DB updater
+                    Drawing.SaveToDatabase();
+                    await SendJsonAsync(socket, new WsMessage { Type = "draw_saved", Data = "ok" });
+                }
+                catch (Exception ex)
+                {
+                    Console.WriteLine("Error saving drawing to DB: " + ex.Message);
+                    await SendJsonAsync(socket, new WsMessage { Type = "draw_saved", Data = "error" });
+                }
+            }
+
+            // dm_create handling remains unchanged
             if (msg.Type == "dm_create")
             {
                 try
@@ -249,7 +400,6 @@ public class JsonWebSocketServer
             // ignore
         }
     }
-
 
     public async Task<bool> SendDmInvite(string toUserName, string fromName, int port)
     {

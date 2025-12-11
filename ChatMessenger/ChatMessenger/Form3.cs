@@ -1,8 +1,10 @@
 ﻿using System;
-using System.Drawing;
-using System.Windows.Forms;
-using System.Threading.Tasks;
 using System.Collections.Generic;
+using System.Drawing;
+using System.Net;
+using System.Net.Sockets;
+using System.Threading.Tasks;
+using System.Windows.Forms;
 
 namespace ChatMessenger
 {
@@ -20,6 +22,8 @@ namespace ChatMessenger
 
         //WebSocket client
         private JsonWebSocketClient wsClient;
+        private JsonWebSocketServer wsServer;
+
 
         //Discovery
         private DiscoveryClient discoveryClient;
@@ -126,7 +130,7 @@ namespace ChatMessenger
             panelLeft.Controls.Add(CreateMenuButton("Direct Messages", ref y, DirectMessage_Click));
             panelLeft.Controls.Add(CreateMenuButton("Server Chat", ref y, ServerChat_Click));
             panelLeft.Controls.Add(CreateMenuButton("Random Chat", ref y));
-            panelLeft.Controls.Add(CreateMenuButton("Drawing Game", ref y));
+            panelLeft.Controls.Add(CreateMenuButton("Drawing Game", ref y, DrawingGame_Click));
 
 
             //Recent Chats
@@ -183,7 +187,7 @@ namespace ChatMessenger
 
         private void DirectMessage_Click(object sender, EventArgs e)
         {
-            LoadPageIntoMain(new DirectMessagePage(currentUser));
+            LoadPageIntoMain(new DirectMessagePage(currentUser, discoveryClient, discoveryServer, wsServer));
         }
 
         private void ServerChat_Click(object sender, EventArgs e)
@@ -195,6 +199,37 @@ namespace ChatMessenger
         {
             ShowLocalServerChat(serverKey);
         }
+
+        private void DrawingGame_Click(object sender, EventArgs e)
+        {
+            // if no wsClient yet, create and start one (connect to localhost by default)
+            if (wsClient == null)
+            {
+                string localIP = GetLocalIPAddress();
+                wsClient = new JsonWebSocketClient($"ws://{localIP}:6000");
+
+                // minimal handler for chat so Form3 can still show chat messages if needed
+                wsClient.OnMessage += (msg) =>
+                {
+                    if (msg.Type == "chat" && chatPanel != null)
+                        this.Invoke(() => AddChatMessage($"Friend: {msg.Data}", Color.LightGray));
+                };
+
+                _ = Task.Run(async () =>
+                {
+                    await wsClient.StartAsync();
+                    await Task.Delay(150);
+                    try
+                    {
+                        await wsClient.SendAsync(new WsMessage { Type = "join", Name = currentUser.Username });
+                    }
+                    catch { }
+                });
+            }
+            // Now load drawing page; it will subscribe to wsClient.OnMessage itself
+            LoadPageIntoMain(new DrawingGamePage(wsClient, currentUser));
+        }
+
 
 
 
@@ -292,18 +327,23 @@ namespace ChatMessenger
                 serverBtn.Click += async (s, e) =>
                 {
                     wsClient = new JsonWebSocketClient($"ws://{server.IP}:{server.Port}");
+
+                    // Keep a simple chat handler here (Form3 shows chat messages)
                     wsClient.OnMessage += (msg) =>
                     {
                         if (msg.Type == "chat" && chatPanel != null)
                         {
                             this.Invoke(() => AddChatMessage($"Friend: {msg.Data}", Color.LightGray));
                         }
+                        // Do NOT forward draw/draw_load here; DrawingGamePage will subscribe to wsClient.OnMessage itself
                     };
 
                     await wsClient.StartAsync();
                     await wsClient.SendAsync(new WsMessage { Type = "join", Name = currentUser.Username });
 
+                    // Show chat UI
                     ShowChatPanel();
+
                 };
 
                 serverListPanel.Controls.Add(serverBtn);
@@ -329,6 +369,7 @@ namespace ChatMessenger
 
             // Start server
             discoveryServer = new DiscoveryServer(8888, 6000);
+            discoveryServer.Name = currentUser.Username; // Add this line
             discoveryServer.Enable();
             Task.Run(async () => await discoveryServer.StartAsync());
 
@@ -514,6 +555,20 @@ namespace ChatMessenger
                 });
             });
         }
+
+        private string GetLocalIPAddress()
+        {
+            var host = Dns.GetHostEntry(Dns.GetHostName());
+            foreach (var ip in host.AddressList)
+            {
+                if (ip.AddressFamily == AddressFamily.InterNetwork)
+                {
+                    return ip.ToString();
+                }
+            }
+            return "127.0.0.1";
+        }
+
 
         private async void Form3_Load(object sender, EventArgs e)   
         {

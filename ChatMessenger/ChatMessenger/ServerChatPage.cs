@@ -46,7 +46,7 @@ namespace ChatMessenger
             createServerBtn = new Button()
             {
                 Text = "Create server",
-                Location = new Point(200, 600),
+                Location = new Point(375, 675),
                 AutoSize = true,
                 Font = new Font("Segoe UI", 14, FontStyle.Bold)
             };
